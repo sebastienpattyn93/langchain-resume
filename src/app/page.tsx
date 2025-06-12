@@ -1,103 +1,264 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect, useRef, ChangeEvent, KeyboardEvent } from 'react';
+import './resume-chat.css';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the SimpleParticleBackground component with SSR disabled
+const SimpleParticleBackground = dynamic(() => import('@/components/SimpleParticleBackground'), {
+  ssr: false
+});
+
+// Import the TypedText component
+import TypedText from '@/components/TypedText';
+
+// Dynamically import the DebugInfo component
+const DebugInfo = dynamic(() => import('@/components/DebugInfo'), {
+  ssr: false
+});
+
+type Message = {
+  sender: 'user' | 'bot';
+  text: string;
+  timestamp: number;
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Auto-scroll to bottom of messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return;
+    const userMessage: Message = { 
+      sender: 'user', 
+      text: input,
+      timestamp: Date.now()
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: input }),
+      });
+      const data = await res.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      const botMessage: Message = { 
+        sender: 'bot', 
+        text: data.answer,
+        timestamp: Date.now()
+      };
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error processing question:', error);
+      setMessages((prev) => [
+        ...prev,
+        { 
+          sender: 'bot', 
+          text: 'Sorry, there was an error processing your question.',
+          timestamp: Date.now()
+        },
+      ]);
+    } finally {
+      setInput('');
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') sendMessage();
+  };
+  
+  // Function to convert URLs and markdown links to clickable links
+  const convertLinksToAnchors = (text: string) => {
+    // Process the text in two passes: first for markdown links, then for direct URLs
+    
+    // 1. Process markdown links [text](url)
+    const markdownLinkRegex = /\[([^\]]+)\]\(([^\)]+)\)/g;
+    
+    // Check if there are markdown links in the text
+    if (markdownLinkRegex.test(text)) {
+      // Reset regex lastIndex after test
+      markdownLinkRegex.lastIndex = 0;
+      
+      // Replace all markdown links with anchor tags
+      const processedText = text.replace(markdownLinkRegex, (match, linkText, linkUrl) => {
+        return `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+      });
+      
+      // Split the text by HTML tags to preserve non-link text
+      const parts = processedText.split(/(<a [^>]+>[^<]+<\/a>)/);
+      const result: React.ReactNode[] = [];
+      
+      parts.forEach((part, i) => {
+        if (part.startsWith('<a ')) {
+          // Extract href and text from the anchor tag
+          const hrefMatch = part.match(/href="([^"]+)"/); 
+          const textMatch = part.match(/>([^<]+)<\/a>/);
+          
+          if (hrefMatch && textMatch) {
+            result.push(
+              <a 
+                key={`link-${i}`} 
+                href={hrefMatch[1]} 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                {textMatch[1]}
+              </a>
+            );
+          }
+        } else if (part) {
+          result.push(<span key={`text-${i}`}>{part}</span>);
+        }
+      });
+      
+      return result;
+    }
+    
+    // 2. If no markdown links were found, process direct URLs
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+    
+    // Split the text by URLs
+    const urlParts = text.split(urlRegex);
+    
+    // Find all URLs in the text
+    const urls = text.match(urlRegex) || [];
+    
+    // Combine parts and URLs into a single array with React elements
+    const urlResult: React.ReactNode[] = [];
+    
+    for (let i = 0; i < urlParts.length; i++) {
+      // Add the text part
+      if (urlParts[i]) {
+        urlResult.push(<span key={`text-${i}`}>{urlParts[i]}</span>);
+      }
+      
+      // Add the URL as a link if it exists
+      if (i < urls.length) {
+        const url = urls[i].startsWith('www.') ? `https://${urls[i]}` : urls[i];
+        urlResult.push(
+          <a 
+            key={`link-${i}`} 
+            href={url} 
+            target="_blank" 
             rel="noopener noreferrer"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
+            {urls[i]}
           </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        );
+      }
+    }
+    
+    return urlResult.length > 0 ? urlResult : [<span key="text-0">{text}</span>];
+  };
+
+  return (
+    <div className="app-container">
+      {/* Simple Canvas Particle Background */}
+      <SimpleParticleBackground />
+      <DebugInfo />
+      
+      <div className={`content-container ${messages.length === 0 ? 'no-messages' : ''}`}>
+        {messages.length > 0 && (
+          <div className="clear-button-container">
+            <button className="clear-button" onClick={() => setMessages([])}>
+              Clear Conversation
+            </button>
+          </div>
+        )}
+        
+        {messages.length === 0 ? (
+          <div className="centered-content">
+            <div className="welcome-message">
+              <TypedText 
+                texts={["Sébastien Pattyn"]} 
+                typingSpeed={100} 
+                cursorBlinkCount={2} 
+                as="h1" 
+                className="typed-heading glow" 
+                onComplete={() => {}}
+              />
+              <TypedText 
+                texts={["This is my personal resume agent that can help you with all your questions related to my resume, experience, and skills."]} 
+                typingSpeed={50} 
+                startDelay={3600} 
+                cursorBlinkCount={2} 
+                as="p" 
+              />
+            </div>
+            
+            <div className="input-container centered">
+              <input
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask me anything about my resume…"
+                disabled={loading}
+              />
+              <button onClick={sendMessage} disabled={loading || !input.trim()}>
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="messages-container">
+              {messages.map((msg, idx) => (
+                <div key={idx} className={`message ${msg.sender}`}>
+                  <div className="message-content">
+                    {msg.sender === 'bot' ? convertLinksToAnchors(msg.text) : msg.text}
+                  </div>
+                </div>
+              ))}
+              {loading && (
+                <div className="message bot loading">
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+            
+            <div className="input-container">
+              <input
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask me anything about my resume…"
+                disabled={loading}
+              />
+              <button onClick={sendMessage} disabled={loading || !input.trim()}>
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 2L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
