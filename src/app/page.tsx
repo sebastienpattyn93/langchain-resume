@@ -36,45 +36,64 @@ export default function Home() {
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
+    
+    // Add user message to chat
     const userMessage: Message = { 
       sender: 'user', 
-      text: input,
-      timestamp: Date.now()
+      text: input, 
+      timestamp: Date.now() 
     };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
     setLoading(true);
-
+    
     try {
-      const res = await fetch('/api/ask', {
+      const response = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: input }),
       });
-      const data = await res.json();
       
-      if (data.error) {
-        throw new Error(data.error);
+      const data = await response.json();
+      
+      // Check for rate limit error
+      if (!response.ok) {
+        if (response.status === 429) {
+          // Rate limit exceeded
+          const rateLimitMessage: Message = { 
+            sender: 'bot', 
+            text: data.message || 'You\'ve reached the rate limit. Please try again later.', 
+            timestamp: Date.now() 
+          };
+          setMessages(prev => [...prev, rateLimitMessage]);
+          return;
+        } else {
+          throw new Error('API request failed');
+        }
       }
       
+      // Add bot response to chat
       const botMessage: Message = { 
         sender: 'bot', 
-        text: data.answer,
-        timestamp: Date.now()
+        text: data.answer, 
+        timestamp: Date.now() 
       };
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages(prev => [...prev, botMessage]);
     } catch (error) {
-      console.error('Error processing question:', error);
-      setMessages((prev) => [
-        ...prev,
-        { 
-          sender: 'bot', 
-          text: 'Sorry, there was an error processing your question.',
-          timestamp: Date.now()
-        },
-      ]);
+      console.error('Error sending message:', error);
+      // Add error message to chat
+      const errorMessage: Message = { 
+        sender: 'bot', 
+        text: 'Sorry, I encountered an error processing your request. Please try again.', 
+        timestamp: Date.now() 
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
-      setInput('');
       setLoading(false);
+      // Scroll to bottom of messages
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
     }
   };
 
@@ -195,7 +214,7 @@ export default function Home() {
                 onComplete={() => {}}
               />
               <TypedText 
-                texts={["This is my personal resume agent that can help you with all your questions related to my resume, experience, and skills."]} 
+                texts={["This is my personal resumé agent that can help you with all your questions related to my resumé, experience, and skills."]} 
                 typingSpeed={50} 
                 startDelay={3600} 
                 cursorBlinkCount={2} 
@@ -208,7 +227,7 @@ export default function Home() {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask me anything about my resume…"
+                placeholder="Ask me anything about my resumé…"
                 disabled={loading}
               />
               <button onClick={sendMessage} disabled={loading || !input.trim()}>
@@ -246,7 +265,7 @@ export default function Home() {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask me anything about my resume…"
+                placeholder="Ask me anything about my resumé..."
                 disabled={loading}
               />
               <button onClick={sendMessage} disabled={loading || !input.trim()}>

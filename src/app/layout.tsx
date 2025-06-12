@@ -21,8 +21,8 @@ const zenDots = Zen_Dots({
 });
 
 export const metadata: Metadata = {
-  title: "Sebastien Pattyn | Resume Chat",
-  description: "Interactive resume chat application for Sebastien Pattyn",
+  title: "Sebastien Pattyn",
+  description: "Interactive resumé chat application for Sebastien Pattyn",
 };
 
 export default function RootLayout({
