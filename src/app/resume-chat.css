@@ -1,3 +1,30 @@
+/* Theme variables */
+:root {
+  /* Dark theme (default) */
+  --bg-color-dark: #0a0a14;
+  --text-color-dark: #e0e0e0;
+  --primary-color-dark: #42d3ff;
+  --secondary-color-dark: #2a6b80;
+  --message-bg-user-dark: rgba(66, 211, 255, 0.15);
+  --message-bg-bot-dark: rgba(20, 20, 35, 0.7);
+  --input-bg-dark: rgba(30, 30, 50, 0.6);
+  --button-bg-dark: #42d3ff;
+  --button-text-dark: #0a0a14;
+  --glass-bg-dark: rgba(10, 10, 20, 0.5);
+  
+  /* Light theme */
+  --bg-color-light: #f0f4f8;
+  --text-color-light: #2a3642;
+  --primary-color-light: #0078d4;
+  --secondary-color-light: #4fb3d9;
+  --message-bg-user-light: rgba(0, 120, 212, 0.1);
+  --message-bg-bot-light: rgba(240, 244, 248, 0.8);
+  --input-bg-light: rgba(255, 255, 255, 0.8);
+  --button-bg-light: #0078d4;
+  --button-text-light: #ffffff;
+  --glass-bg-light: rgba(255, 255, 255, 0.7);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,12 +33,23 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: #0a0a14;
-  color: #e0e0e0;
   overflow: hidden;
   height: 100vh;
   margin: 0;
   padding: 0;
+}
+
+/* Apply theme colors */
+.app-container {
+  background-color: var(--bg-color-dark);
+  color: var(--text-color-dark);
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.app-container.light {
+  background-color: var(--bg-color-light);
+  color: var(--text-color-light);
 }
 
 /* Particle Canvas styling */
@@ -80,15 +118,20 @@ body {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  background-color: rgba(10, 10, 20, 0.5); /* More transparent */
+  background-color: var(--glass-bg-dark); /* Using theme variable */
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
   border-radius: 12px;
   scrollbar-width: thin;
-  scrollbar-color: #42d3ff #0a0a14;
+  scrollbar-color: var(--primary-color-dark) var(--bg-color-dark);
   margin-top: 80px; /* Space for the 3D scene to be visible */
   pointer-events: auto; /* Enable interaction with messages */
   z-index: 11;
+}
+
+.app-container.light .messages-container {
+  background-color: var(--glass-bg-light);
+  scrollbar-color: var(--primary-color-light) var(--bg-color-light);
 }
 
 /* Input Container */
@@ -103,11 +146,11 @@ body {
 
 .input-container input {
   flex: 1;
-  padding: 12px 15px;
+  padding: 12px 20px;
   border-radius: 24px;
   border: 1px solid rgba(66, 211, 255, 0.3);
-  background-color: rgba(10, 10, 20, 0.2);
-  color: #fff;
+  background-color: var(--input-bg-dark);
+  color: var(--text-color-dark);
   font-size: 1rem;
   outline: none;
   transition: all 0.3s ease;
@@ -115,13 +158,28 @@ body {
   -webkit-backdrop-filter: blur(3px);
 }
 
+.app-container.light .input-container input {
+  border: 1px solid rgba(0, 120, 212, 0.3);
+  background-color: var(--input-bg-light);
+  color: var(--text-color-light);
+}
+
 .input-container input:focus {
-  border-color: #42d3ff;
+  border-color: var(--primary-color-dark);
   box-shadow: 0 0 10px rgba(66, 211, 255, 0.3);
+}
+
+.app-container.light .input-container input:focus {
+  border-color: var(--primary-color-light);
+  box-shadow: 0 0 10px rgba(0, 120, 212, 0.3);
 }
 
 .input-container input::placeholder {
   color: rgba(255, 255, 255, 0.5);
+}
+
+.app-container.light .input-container input::placeholder {
+  color: rgba(42, 54, 66, 0.5);
 }
 
 .input-container button {
@@ -130,7 +188,7 @@ body {
   margin-left: 10px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #42d3ff, #0094ff);
+  background: linear-gradient(135deg, var(--primary-color-dark), var(--secondary-color-dark));
   color: white;
   display: flex;
   justify-content: center;
@@ -138,6 +196,10 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
+}
+
+.app-container.light .input-container button {
+  background: linear-gradient(135deg, var(--primary-color-light), var(--secondary-color-light));
 }
 
 .input-container button:hover {
@@ -172,16 +234,26 @@ body {
 
 .message.user {
   align-self: flex-end;
-  background: linear-gradient(135deg, #42d3ff, #0094ff);
+  background: linear-gradient(135deg, var(--primary-color-dark), var(--secondary-color-dark));
   color: white;
   border-bottom-right-radius: 4px;
 }
 
+.app-container.light .message.user {
+  background: linear-gradient(135deg, var(--primary-color-light), var(--secondary-color-light));
+  color: white;
+}
+
 .message.bot {
   align-self: flex-start;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #e0e0e0;
+  background-color: var(--message-bg-bot-dark);
+  color: var(--text-color-dark);
   border-bottom-left-radius: 4px;
+}
+
+.app-container.light .message.bot {
+  background-color: var(--message-bg-bot-light);
+  color: var(--text-color-light);
 }
 
 .message-content {
@@ -216,7 +288,7 @@ body {
 
 .clear-button {
   background-color: rgba(255, 255, 255, 0.1);
-  color: #e0e0e0;
+  color: var(--text-color-dark);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   padding: 8px 16px;
@@ -227,9 +299,20 @@ body {
   -webkit-backdrop-filter: blur(5px);
 }
 
+.app-container.light .clear-button {
+  background-color: rgba(0, 120, 212, 0.1);
+  color: var(--text-color-light);
+  border: 1px solid rgba(0, 120, 212, 0.3);
+}
+
 .clear-button:hover:not(:disabled) {
   background-color: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.3);
+}
+
+.app-container.light .clear-button:hover:not(:disabled) {
+  background-color: rgba(0, 120, 212, 0.2);
+  border-color: rgba(0, 120, 212, 0.4);
 }
 
 .clear-button:disabled {
@@ -400,4 +483,191 @@ body {
     width: 42px;
     height: 42px;
   }
+}
+
+/* Feature buttons container */
+.feature-buttons-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Add vertical spacing between buttons */
+  z-index: 1000; /* Ensure buttons are above all other elements */
+}
+
+.feature-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  cursor: pointer;
+  color: var(--text-color);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.feature-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.app-container.light .feature-button:hover {
+  box-shadow: 0 0 15px rgba(0, 120, 212, 0.3);
+}
+
+/* Ensure consistent styling across all buttons */
+.feature-button {
+  /* Consistent border */
+  border-width: 1px;
+  /* Consistent color */
+  color: var(--primary-color-dark);
+}
+
+.app-container.light .feature-button {
+  color: var(--primary-color-light);
+}
+
+/* Remove any specific button styles that would cause inconsistency */
+.mindmap-button, .career-flow-button, .theme-toggle-button {
+  /* Ensure same opacity */
+  opacity: 1;
+}
+
+/* Material Icons styling */
+.material-icons {
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* Active button state */
+.feature-button.active {
+  background: var(--primary-color-dark);
+  color: var(--bg-color-dark);
+  box-shadow: 0 0 15px rgba(66, 211, 255, 0.6);
+}
+
+.app-container.light .feature-button.active {
+  background: var(--primary-color-light);
+  color: var(--bg-color-light);
+  box-shadow: 0 0 15px rgba(0, 120, 212, 0.6);
+}
+
+/* Back to chat button */
+.back-to-chat-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-color);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.back-to-chat-button.feature-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+}
+
+.back-to-chat-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* View Transitions */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+/* Skills View */
+.skills-view {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  overflow-y: auto;
+  padding: 70px 20px 20px;
+}
+
+/* Career View */
+.career-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.career-placeholder {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
 }

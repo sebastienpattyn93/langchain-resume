@@ -41,7 +41,7 @@ const SimpleParticleBackground: React.FC = () => {
           size: Math.random() * 1.5 + 0.5,
           speedX: (Math.random() - 0.5) * 0.3,
           speedY: (Math.random() - 0.5) * 0.3,
-          opacity: Math.random() * 0.5 + 0.3
+          opacity: Math.random() * 0.5 + 0.5
         });
       }
     };

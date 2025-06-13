@@ -32,6 +32,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${zenDots.variable}`}>
+      <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+      </head>
       <body
         className={`antialiased`}
         style={{ backgroundColor: '#0a0a14' }}
