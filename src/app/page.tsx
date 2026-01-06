@@ -207,7 +207,7 @@ export default function Home() {
             <div className="welcome-message">
               <TypedText 
                 texts={["Sébastien Pattyn"]} 
-                typingSpeed={100} 
+                typingSpeed={50} 
                 cursorBlinkCount={2} 
                 as="h1" 
                 className="typed-heading glow" 
@@ -215,8 +215,8 @@ export default function Home() {
               />
               <TypedText 
                 texts={["This is my personal resumé agent that can help you with all your questions related to my resumé, experience, and skills."]} 
-                typingSpeed={50} 
-                startDelay={3600} 
+                typingSpeed={30} 
+                startDelay={1800} 
                 cursorBlinkCount={2} 
                 as="p" 
               />
