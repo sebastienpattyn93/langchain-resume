@@ -5,7 +5,8 @@
 ## Technical Leadership • Full Stack Excellence • Cloud Architect
 
 ## Work History Summary
-- **Freelance** (2023-Present): Full Stack Developer working with BioLizard and Charge 42/VITO
+- **Nuclivision** (2025-Present): Software Engineer
+- **Biolizard** (2023-2025): Full Stack Developer
 - **Excelra** (2022-2023): Lead Platform Engineer
 - **Lighthouse** (2020-2021): TechOps Engineer
 - **Tengu** (2016-2020): Lead Full Stack Developer
