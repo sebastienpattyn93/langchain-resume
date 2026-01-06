@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ChatOpenAI } from '@langchain/openai';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { MemoryVectorStore } from "@langchain/classic/vectorstores/memory";
 import { OpenAIEmbeddings } from '@langchain/openai';
-import { RetrievalQAChain } from "langchain/chains";
-import { PromptTemplate } from "@langchain/core/prompts";
 import fs from 'fs';
 import path from 'path';
 import rateLimiter from '../rate-limiter';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { createStuffDocumentsChain } from '@langchain/classic/chains/combine_documents';
+import { createRetrievalChain } from '@langchain/classic/chains/retrieval';
 
 // Initialize OpenAI client with API key from environment variables
 let vectorStore: MemoryVectorStore | null = null;
-let chain: RetrievalQAChain | null = null;
+let chain: unknown | null = null;
 
 async function initializeChain() {
   try {
@@ -53,13 +54,13 @@ async function initializeChain() {
     });
     
     // Create a prompt template to guide the model's responses
-    const promptTemplate = new PromptTemplate({
-      template: `You are Sébastien Pattyn's personal resume assistant. Answer questions about Sébastien's experience, skills, education, and career based on the provided context.
+    const promptTemplate = ChatPromptTemplate.fromTemplate(
+      `You are Sébastien Pattyn's personal resume assistant. Answer questions about Sébastien's experience, skills, education, and career based on the provided context.
       
 Context: {context}
       
 IMPORTANT FACTS ABOUT SÉBASTIEN'S CAREER:
-- Sébastien has worked at: Freelance (2023-Present, including BioLizard and Charge 42/VITO), Excelra (2022-2023), Lighthouse (2020-2021), and Tengu (2016-2020).
+- Sébastien has worked at: Nuclivision (2025-Present), BioLizard (2023-2025), Excelra (2022-2023), Lighthouse (2020-2021), and Tengu (2016-2020).
 - His core skills include: Full Stack Development, Cloud Architecture, DevOps, and Data Engineering.
       
 When responding to questions:
@@ -72,17 +73,20 @@ When responding to questions:
 - For questions about availability or contact information, briefly suggest reaching out via LinkedIn or email
 - If you don't know the answer, say so briefly and suggest contacting Sébastien directly
       
-Question: {query}
+Question: {input}
       
-Answer:`,
-      inputVariables: ["context", "query"],
+Answer:`
+    );
+    
+    // Create document chain and retrieval chain using new API
+    const documentChain = await createStuffDocumentsChain({
+      llm: model,
+      prompt: promptTemplate,
     });
     
-    // Create a more detailed chain with specific instructions
-    chain = RetrievalQAChain.fromLLM(model, retriever, {
-      returnSourceDocuments: true,
-      verbose: process.env.NODE_ENV === 'development',
-      prompt: promptTemplate,
+    chain = await createRetrievalChain({
+      retriever,
+      combineDocsChain: documentChain,
     });
     
     return chain;
@@ -139,11 +143,11 @@ export async function POST(request: NextRequest) {
     const qaChain = await initializeChain();
     
     // Get answer from chain
-    const response = await qaChain.call({
-      query: question,
+    const response = await qaChain.invoke({
+      input: question,
     });
     
-    return NextResponse.json({ answer: response.text });
+    return NextResponse.json({ answer: response.answer });
   } catch (error) {
     console.error('Error processing question:', error);
     return NextResponse.json(

@@ -9,8 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@langchain/classic": "^1.0.8",
     "@langchain/core": "^1.1.9",
     "@langchain/openai": "^1.2.1",
+    "@langchain/textsplitters": "^1.0.1",
     "langchain": "^1.2.4",
     "next": "^16.1.1",
     "openai": "^6.15.0",
