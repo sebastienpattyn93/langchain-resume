@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Initialize chain if not already done
-    const qaChain = await initializeChain();
+    const qaChain = await initializeChain() as any;
     
     // Get answer from chain
     const response = await qaChain.invoke({
