@@ -41,17 +41,24 @@ Dedicated and multilingual professional with over 9 years of achievements in sof
 ---
 
 ## Professional Experience
+### COMPANY: Nuclivision (MedTech Company)
+**2025 – Present**
 
-### COMPANY: Freelance — Full Stack Developer
-**2023 – Present**
+-  **Full-Stack Development:** Leading all development for the front-end application, backend APIs, and custom Windows service, delivering end-to-end solutions for medical technology workflows.
+-  **Front-End Application:** Built responsive and intuitive user interfaces in TypeScript/JavaScript, ensuring seamless user experience and efficient data interaction.
+-  **Data Visualization:** Created customer-facing visualizations in TypeScript/JavaScript to deliver actionable insights from complex medical data.
+-  **Backend & Integration:** Developed robust backend APIs to support application functionality and integrate with custom Windows services.
 
-#### BioLizard (Bioinformatics Company)
+---
+
+### COMPANY: BioLizard (Bioinformatics Company)
+**2023 – 2025**
+
 -  **DevOps Transformation:** Orchestrated end-to-end DevOps modernization, migrating from single-instance Docker Compose to scalable Kubernetes architecture with automated deployment pipelines. Implemented CI/CD and Terraform for this architecture, reducing deployment errors and cutting deployment time.
 -  **Backend & Data Engineering:** Crafted a scalable Python/FastAPI backend and established a custom ETL engine using Pandas to generate insights and interactive dashboards from public data.
+-  **Front-End Development:** Implemented front-end solutions in TypeScript/JavaScript, prioritizing seamless user experience and intuitive interface design.
 -  **Cost Optimization:** Implemented infrastructure-as-code using Terraform that reduced cloud costs while improving system reliability and scalability.
 
-#### Charge 42 (VITO - Flemish Institute for Technological Research)
--  **Smart Charging Infrastructure:** Built scalable infrastructure for electric vehicle smart charging optimizations using TypeScript, Node.js, and AWS serverless technologies.
 
 ---
 
